@@ -15,7 +15,7 @@ terraform {
   cloud {
     organization = "yarnamcorp"
     workspaces {
-      name = "TerraformCI"
+      name = "TerrafromCI"
     }
   }
 }
