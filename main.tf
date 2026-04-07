@@ -126,7 +126,7 @@ resource "azurerm_subnet_network_security_group_association" "nsg_assoc" {
 # ============================================================
 
 resource "azurerm_public_ip" "pip" {
-  name                = "pip-${azurerm_bastion_host.bastion.name}"
+  name                = "pip-${var.bastion_name}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   allocation_method   = "Static"
