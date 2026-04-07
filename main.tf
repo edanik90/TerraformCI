@@ -55,11 +55,18 @@ resource "azurerm_virtual_network" "vnet" {
   tags                = var.tags
 }
 
-resource "azurerm_subnet" "subnet" {
+resource "azurerm_subnet" "subnet_1" {
   name                 = "snet-${var.vm_name}"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.0.1.0/24"]
+}
+
+resource "azurerm_subnet" "subnet_2" {
+  name                 = "snet-bastion"
+  resource_group_name  = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes     = ["10.0.2.0/24"]
 }
 
 # ============================================================
@@ -73,10 +80,22 @@ resource "azurerm_network_security_group" "nsg" {
   tags                = var.tags
 
   security_rule {
-    name                       = "Allow-RDP"
+    name                       = "Allow-RDP-for-Bastion"
     priority                   = 100
     direction                  = "Inbound"
     access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
+    source_address_prefix      = azurerm_subnet.subnet_2.address_prefixes
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "Deny-RDP"
+    priority                   = 101
+    direction                  = "Inbound"
+    access                     = "Deny"
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "3389"
@@ -98,7 +117,7 @@ resource "azurerm_network_security_group" "nsg" {
 }
 
 resource "azurerm_subnet_network_security_group_association" "nsg_assoc" {
-  subnet_id                 = azurerm_subnet.subnet.id
+  subnet_id                 = azurerm_subnet.subnet_1.id
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
@@ -107,7 +126,7 @@ resource "azurerm_subnet_network_security_group_association" "nsg_assoc" {
 # ============================================================
 
 resource "azurerm_public_ip" "pip" {
-  name                = "pip-${var.vm_name}"
+  name                = "pip-${azurerm_bastion_host.bastion.name}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   allocation_method   = "Static"
@@ -127,7 +146,7 @@ resource "azurerm_network_interface" "nic" {
 
   ip_configuration {
     name                          = "ipconfig-${var.vm_name}"
-    subnet_id                     = azurerm_subnet.subnet.id
+    subnet_id                     = azurerm_subnet.subnet_1.id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.pip.id
   }
@@ -138,14 +157,35 @@ resource "azurerm_network_interface_security_group_association" "nic_nsg_assoc" 
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
+# ============================================================
+# Storage Account
+# ============================================================
+
 resource "azurerm_storage_account" "storage" {
   name                     = "stgyrnm04072026"
   resource_group_name      = azurerm_resource_group.rg.name
   location                 = azurerm_resource_group.rg.location
   account_tier             = "Standard"
   account_replication_type = "GRS"
+  tags                     = var.tags
 }
 
+# ============================================================
+# Bastion Host
+# ============================================================
+
+resource "azurerm_bastion_host" "bastion" {
+  name                = "bastion-host"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  tags                = var.tags
+
+  ip_configuration {
+    name                 = "configuration"
+    subnet_id            = azurerm_subnet.subnet_2.id
+    public_ip_address_id = azurerm_public_ip.pip.id
+  }
+}
 # ============================================================
 # Windows Server Virtual Machine
 # ============================================================
