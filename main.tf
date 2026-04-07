@@ -218,7 +218,7 @@ resource "azurerm_windows_virtual_machine" "vm" {
     version   = "latest"
   }
 
-  # enable_automatic_updates = true
+  #enable_automatic_updates = true
   patch_mode               = "AutomaticByOS"
 
   boot_diagnostics {}
