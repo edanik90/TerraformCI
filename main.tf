@@ -316,15 +316,16 @@ resource "azurerm_bastion_host" "bastion_dmz" {
 # Linux Server Virtual Machines
 # ============================================================
 resource "azurerm_linux_virtual_machine" "webapp01" {
-  name                = "WEBAPP01"
-  resource_group_name = azurerm_resource_group.prod_rg.name
-  location            = azurerm_resource_group.prod_rg.location
-  size                = var.vm_size
-  priority            = "Spot"
-  eviction_policy     = "Deallocate"
-  max_bid_price       = -1
-  admin_username      = var.admin_username
-  admin_password      = var.admin_password
+  name                            = "WEBAPP01"
+  resource_group_name             = azurerm_resource_group.prod_rg.name
+  location                        = azurerm_resource_group.prod_rg.location
+  size                            = var.vm_size
+  priority                        = "Spot"
+  eviction_policy                 = "Deallocate"
+  max_bid_price                   = -1
+  disable_password_authentication = false
+  admin_username                  = var.admin_username
+  admin_password                  = var.admin_password
   network_interface_ids = [
     azurerm_network_interface.nic_webapp01.id,
   ]
@@ -344,15 +345,16 @@ resource "azurerm_linux_virtual_machine" "webapp01" {
 }
 
 resource "azurerm_linux_virtual_machine" "webserver01" {
-  name                = "WEBSERVER01"
-  resource_group_name = azurerm_resource_group.dmz_rg.name
-  location            = azurerm_resource_group.dmz_rg.location
-  size                = var.vm_size
-  priority            = "Spot"
-  eviction_policy     = "Deallocate"
-  max_bid_price       = -1
-  admin_username      = var.admin_username
-  admin_password      = var.admin_password
+  name                            = "WEBSERVER01"
+  resource_group_name             = azurerm_resource_group.dmz_rg.name
+  location                        = azurerm_resource_group.dmz_rg.location
+  size                            = var.vm_size
+  priority                        = "Spot"
+  eviction_policy                 = "Deallocate"
+  max_bid_price                   = -1
+  disable_password_authentication = false
+  admin_username                  = var.admin_username
+  admin_password                  = var.admin_password
   network_interface_ids = [
     azurerm_network_interface.nic_webserver01.id,
   ]
