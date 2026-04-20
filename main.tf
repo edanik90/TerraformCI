@@ -1,7 +1,6 @@
 # ============================================================
 # main.tf
 # ============================================================
-
 terraform {
   required_providers {
     azurerm = {
@@ -33,8 +32,6 @@ provider "azurerm" {
   features {}
 }
 
-
-
 # ============================================================
 # Resource Groups
 # ============================================================
@@ -55,7 +52,6 @@ resource "azurerm_resource_group" "hub_rg" {
   location = var.location
   tags     = var.tags
 }
-
 
 # ============================================================
 # Virtual Networks & Subnets
@@ -187,7 +183,6 @@ resource "azurerm_subnet_network_security_group_association" "nsg_assoc_prod" {
   network_security_group_id = azurerm_network_security_group.nsg_prod.id
 }
 
-
 # ============================================================
 # Network Security Group For DMZ (Allow SSH from Bastion, Deny RDP from Rest)
 # ============================================================
@@ -228,7 +223,6 @@ resource "azurerm_subnet_network_security_group_association" "nsg_assoc_dmz" {
   network_security_group_id = azurerm_network_security_group.nsg_dmz.id
 }
 
-
 # ============================================================
 # Public IPs for Bastion Hosts
 # ============================================================
@@ -249,7 +243,6 @@ resource "azurerm_public_ip" "pip_bastion_dmz" {
   sku                 = "Standard"
   tags                = var.tags
 }
-
 
 # ============================================================
 # Network Interface Cards (NICs)
@@ -310,7 +303,6 @@ resource "azurerm_bastion_host" "bastion_dmz" {
   }
 }
 
-
 # ============================================================
 # Linux Server Virtual Machines
 # ============================================================
@@ -369,7 +361,6 @@ resource "azurerm_linux_virtual_machine" "webserver01" {
     version   = "latest"
   }
 }
-
 /* resource "azurerm_windows_virtual_machine" "vm" {
   name                = var.vm_name
   location            = azurerm_resource_group.rg.location
