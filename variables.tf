@@ -8,34 +8,34 @@ variable "location" {
   default     = "East US"
 }
 
-variable "resource_group_name" {
-  description = "Name of the resource group"
-  type        = string
-  default     = "rg-windows-vm"
-}
+#variable "resource_group_name" {
+#  description = "Name of the resource group"
+#  type        = string
+#  default     = "rg-windows-vm"
+#}
 
-variable "vm_name" {
+/* variable "vm_name" {
   description = "Name of the Windows Server VM"
   type        = string
   default     = "vm-win-server"
-}
+} */
 
-variable "bastion_name" {
-  description = "Name of the Bastion Host"
-  type        = string
-  default     = "bastion-host"
-}
+#variable "bastion_name" {
+#  description = "Name of the Bastion Host"
+#  type        = string
+#  default     = "bastion-host"
+#}
 
 variable "vm_size" {
   description = "Size/SKU of the VM"
   type        = string
-  default     = "Standard_D2s_v3"
+  default     = "Standard_DC1s_v3"
 }
 
 variable "admin_username" {
   description = "Administrator username for the VM"
   type        = string
-  default     = "adminuser"
+  default     = "vmadmin"
 }
 
 variable "admin_password" {
@@ -50,8 +50,14 @@ variable "windows_sku" {
   default     = "2022-datacenter-azure-edition"
 }
 
-variable "allowed_rdp_source" {
-  description = "Source IP or CIDR allowed to RDP. Use '*' for lab, restrict to your IP in production."
+variable "linux_sku" {
+  description = "Linux Server image SKU"
+  type        = string
+  default     = "ubuntu-24_04-lts"
+}
+
+variable "allowed_ssh_source" {
+  description = "Source IP or CIDR allowed to SSH. Use '*' for lab, restrict to your IP in production."
   type        = string
   default     = "*"
 }
@@ -61,7 +67,7 @@ variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
   default = {
-    environment = "lab"
+    environment = "alz-proj"
     managed_by  = "terraform"
   }
 }
