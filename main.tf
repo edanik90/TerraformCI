@@ -61,7 +61,7 @@ resource "azurerm_virtual_network" "vnet_prod" {
   location            = azurerm_resource_group.prod_rg.location
   resource_group_name = azurerm_resource_group.prod_rg.name
   address_space       = ["10.2.0.0/24"]
-  tags = var.tags
+  tags                = var.tags
 }
 
 resource "azurerm_virtual_network" "vnet_dmz" {
@@ -69,7 +69,7 @@ resource "azurerm_virtual_network" "vnet_dmz" {
   location            = azurerm_resource_group.dmz_rg.location
   resource_group_name = azurerm_resource_group.dmz_rg.name
   address_space       = ["10.1.0.0/24"]
-  tags = var.tags
+  tags                = var.tags
 }
 
 resource "azurerm_virtual_network" "vnet_hub" {
@@ -77,7 +77,7 @@ resource "azurerm_virtual_network" "vnet_hub" {
   location            = azurerm_resource_group.hub_rg.location
   resource_group_name = azurerm_resource_group.hub_rg.name
   address_space       = ["172.16.0.0/24"]
-  tags = var.tags
+  tags                = var.tags
 }
 
 resource "azurerm_subnet" "vnet_prod_subnet" {
