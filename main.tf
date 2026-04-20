@@ -65,7 +65,7 @@ resource "azurerm_virtual_network" "vnet_prod" {
     name           = "subnet"
     address_prefix = "10.2.1.0/24"
   }
-  tags                = var.tags
+  tags = var.tags
 }
 
 resource "azurerm_virtual_network" "vnet_dmz" {
@@ -73,11 +73,11 @@ resource "azurerm_virtual_network" "vnet_dmz" {
   location            = azurerm_resource_group.dmz_rg.location
   resource_group_name = azurerm_resource_group.dmz_rg.name
   address_space       = ["10.1.0.0/24"]
-    subnet = {
+  subnet = {
     name           = "subnet"
     address_prefix = "10.1.1.0/24"
   }
-  tags                = var.tags
+  tags = var.tags
 }
 
 resource "azurerm_virtual_network" "vnet_hub" {
@@ -89,7 +89,7 @@ resource "azurerm_virtual_network" "vnet_hub" {
     name           = "subnet"
     address_prefix = "172.16.1.0/24"
   }
-  tags                = var.tags
+  tags = var.tags
 }
 
 resource "azurerm_subnet" "vnet_dmz_bastion_subnet" {
@@ -110,37 +110,37 @@ resource "azurerm_subnet" "vnet_prod_bastion_subnet" {
 # Network peerings
 # ============================================================
 resource "azurerm_virtual_network_peering" "peer_prod_to_hub" {
-  name                      = "peer-prod-to-hub"
-  resource_group_name       = azurerm_resource_group.prod_rg.name
-  virtual_network_name      = azurerm_virtual_network.vnet_prod.name
-  remote_virtual_network_id = azurerm_virtual_network.vnet_hub.id
+  name                         = "peer-prod-to-hub"
+  resource_group_name          = azurerm_resource_group.prod_rg.name
+  virtual_network_name         = azurerm_virtual_network.vnet_prod.name
+  remote_virtual_network_id    = azurerm_virtual_network.vnet_hub.id
   allow_virtual_network_access = true
 }
 
 resource "azurerm_virtual_network_peering" "peer_hub_to_prod" {
-  name                      = "peer-hub-to-prod"
-  resource_group_name       = azurerm_resource_group.hub_rg.name
-  virtual_network_name      = azurerm_virtual_network.vnet_hub.name
-  remote_virtual_network_id = azurerm_virtual_network.vnet_prod.id
+  name                         = "peer-hub-to-prod"
+  resource_group_name          = azurerm_resource_group.hub_rg.name
+  virtual_network_name         = azurerm_virtual_network.vnet_hub.name
+  remote_virtual_network_id    = azurerm_virtual_network.vnet_prod.id
   allow_virtual_network_access = true
-  allow_forwarded_traffic = true
+  allow_forwarded_traffic      = true
 }
 
 resource "azurerm_virtual_network_peering" "peer_dmz_to_hub" {
-  name                      = "peer-dmz-to-hub"
-  resource_group_name       = azurerm_resource_group.dmz_rg.name
-  virtual_network_name      = azurerm_virtual_network.vnet_dmz.name
-  remote_virtual_network_id = azurerm_virtual_network.vnet_hub.id
+  name                         = "peer-dmz-to-hub"
+  resource_group_name          = azurerm_resource_group.dmz_rg.name
+  virtual_network_name         = azurerm_virtual_network.vnet_dmz.name
+  remote_virtual_network_id    = azurerm_virtual_network.vnet_hub.id
   allow_virtual_network_access = true
 }
 
 resource "azurerm_virtual_network_peering" "peer_hub_to_dmz" {
-  name                      = "peer-hub-to-dmz"
-  resource_group_name       = azurerm_resource_group.hub_rg.name
-  virtual_network_name      = azurerm_virtual_network.vnet_hub.name
-  remote_virtual_network_id = azurerm_virtual_network.vnet_dmz.id
+  name                         = "peer-hub-to-dmz"
+  resource_group_name          = azurerm_resource_group.hub_rg.name
+  virtual_network_name         = azurerm_virtual_network.vnet_hub.name
+  remote_virtual_network_id    = azurerm_virtual_network.vnet_dmz.id
   allow_virtual_network_access = true
-  allow_forwarded_traffic = true
+  allow_forwarded_traffic      = true
 }
 
 # ============================================================
