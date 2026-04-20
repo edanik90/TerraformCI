@@ -63,7 +63,7 @@ resource "azurerm_virtual_network" "vnet_prod" {
   address_space       = ["10.2.0.0/24"]
   subnet = {
     name           = "subnet"
-    address_prefix = "10.2.1.0/24"
+    address_prefix = ["10.2.1.0/24"]
   }
   tags = var.tags
 }
@@ -75,7 +75,7 @@ resource "azurerm_virtual_network" "vnet_dmz" {
   address_space       = ["10.1.0.0/24"]
   subnet = {
     name           = "subnet"
-    address_prefix = "10.1.1.0/24"
+    address_prefix = ["10.1.1.0/24"]
   }
   tags = var.tags
 }
@@ -87,7 +87,7 @@ resource "azurerm_virtual_network" "vnet_hub" {
   address_space       = ["172.16.0.0/24"]
   subnet = {
     name           = "subnet"
-    address_prefix = "172.16.1.0/24"
+    address_prefix = ["172.16.1.0/24"]
   }
   tags = var.tags
 }
@@ -249,13 +249,13 @@ resource "azurerm_public_ip" "pip_bastion_dmz" {
 # ============================================================
 resource "azurerm_network_interface" "nic_webbapp01" {
   name                = "nic-webapp01"
-  location            = azurerm_resource_group.rg_prod.location
-  resource_group_name = azurerm_resource_group.rg_prod.name
+  location            = azurerm_resource_group.prod_rg.location
+  resource_group_name = azurerm_resource_group.prod_rg.name
   tags                = var.tags
 
   ip_configuration {
     name                          = "ipconfig-webapp01"
-    subnet_id                     = azurerm_subnet.vnet_prod_subnet.id
+    subnet_id                     = azurerm_subnet.vnet_prod.subnet.id
     private_ip_address_allocation = "Dynamic"
     #public_ip_address_id          = azurerm_public_ip.pip.id
   }
@@ -263,13 +263,13 @@ resource "azurerm_network_interface" "nic_webbapp01" {
 
 resource "azurerm_network_interface" "nic_webbserver01" {
   name                = "nic-webserver01"
-  location            = azurerm_resource_group.rg_dmz.location
-  resource_group_name = azurerm_resource_group.rg_dmz.name
+  location            = azurerm_resource_group.dmz_rg.location
+  resource_group_name = azurerm_resource_group.dmz_rg.name
   tags                = var.tags
 
   ip_configuration {
     name                          = "ipconfig-webserver01"
-    subnet_id                     = azurerm_subnet.vnet_dmz_subnet.id
+    subnet_id                     = azurerm_subnet.vnet_dmz.subnet.id
     private_ip_address_allocation = "Dynamic"
   }
 }
@@ -336,8 +336,8 @@ resource "azurerm_linux_virtual_machine" "webapp01" {
 
 resource "azurerm_linux_virtual_machine" "webserver01" {
   name                = "WEBSERVER01"
-  resource_group_name = azurerm_resource_group.rg_dmz.name
-  location            = azurerm_resource_group.rg_dmz.location
+  resource_group_name = azurerm_resource_group.dmz_rg.name
+  location            = azurerm_resource_group.dmz_rg.location
   size                = var.vm_size
   priority            = "Spot"
   eviction_policy     = "Deallocate"
@@ -345,7 +345,7 @@ resource "azurerm_linux_virtual_machine" "webserver01" {
   admin_username      = var.admin_username
   admin_password      = var.admin_password
   network_interface_ids = [
-    azurerm_network_interface.nic_webapp01.id,
+    azurerm_network_interface.nic_webserver01.id,
   ]
 
   os_disk {
