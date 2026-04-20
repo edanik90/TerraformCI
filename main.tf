@@ -288,8 +288,8 @@ resource "azurerm_network_interface" "nic_webserver01" {
 # ============================================================
 resource "azurerm_bastion_host" "bastion_prod" {
   name                = "Bastion-Prod"
-  location            = azurerm_resource_group.rg_prod.location
-  resource_group_name = azurerm_resource_group.rg_prod.name
+  location            = azurerm_resource_group.prod_rg.location
+  resource_group_name = azurerm_resource_group.prod_rg.name
   tags                = var.tags
 
   ip_configuration {
@@ -307,7 +307,7 @@ resource "azurerm_bastion_host" "bastion_dmz" {
 
   ip_configuration {
     name                 = "configuration"
-    subnet_id            = azurerm_subnet.vnet_dmz_bastion_subnet
+    subnet_id            = azurerm_subnet.vnet_dmz_bastion_subnet.id
     public_ip_address_id = azurerm_public_ip.pip_bastion_dmz.id
   }
 }
