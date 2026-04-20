@@ -247,7 +247,7 @@ resource "azurerm_public_ip" "pip_bastion_dmz" {
 # ============================================================
 # Network Interface Cards (NICs)
 # ============================================================
-resource "azurerm_network_interface" "nic_webbapp01" {
+resource "azurerm_network_interface" "nic_webapp01" {
   name                = "nic-webapp01"
   location            = azurerm_resource_group.prod_rg.location
   resource_group_name = azurerm_resource_group.prod_rg.name
@@ -261,7 +261,7 @@ resource "azurerm_network_interface" "nic_webbapp01" {
   }
 }
 
-resource "azurerm_network_interface" "nic_webbserver01" {
+resource "azurerm_network_interface" "nic_webserver01" {
   name                = "nic-webserver01"
   location            = azurerm_resource_group.dmz_rg.location
   resource_group_name = azurerm_resource_group.dmz_rg.name
@@ -308,8 +308,8 @@ resource "azurerm_bastion_host" "bastion_dmz" {
 # ============================================================
 resource "azurerm_linux_virtual_machine" "webapp01" {
   name                = "WEBAPP01"
-  resource_group_name = azurerm_resource_group.rg_prod.name
-  location            = azurerm_resource_group.rg_prod.location
+  resource_group_name = azurerm_resource_group.prod_rg.name
+  location            = azurerm_resource_group.prod_rg.location
   size                = var.vm_size
   priority            = "Spot"
   eviction_policy     = "Deallocate"
