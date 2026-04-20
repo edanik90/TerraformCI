@@ -61,12 +61,6 @@ resource "azurerm_virtual_network" "vnet_prod" {
   location            = azurerm_resource_group.prod_rg.location
   resource_group_name = azurerm_resource_group.prod_rg.name
   address_space       = ["10.2.0.0/24"]
-  subnet = [
-    {
-      name           = "subnet"
-      address_prefix = "10.2.1.0/24"
-    }
-  ]
   tags = var.tags
 }
 
@@ -75,12 +69,6 @@ resource "azurerm_virtual_network" "vnet_dmz" {
   location            = azurerm_resource_group.dmz_rg.location
   resource_group_name = azurerm_resource_group.dmz_rg.name
   address_space       = ["10.1.0.0/24"]
-  subnet = [
-    {
-      name           = "subnet"
-      address_prefix = "10.1.1.0/24"
-    }
-  ]
   tags = var.tags
 }
 
@@ -89,13 +77,28 @@ resource "azurerm_virtual_network" "vnet_hub" {
   location            = azurerm_resource_group.hub_rg.location
   resource_group_name = azurerm_resource_group.hub_rg.name
   address_space       = ["172.16.0.0/24"]
-  subnet = [
-    {
-      name           = "subnet"
-      address_prefix = "172.16.1.0/24"
-    }
-  ]
   tags = var.tags
+}
+
+resource "azurerm_subnet" "vnet_prod_subnet" {
+  name                 = "subnet"
+  resource_group_name  = azurerm_resource_group.prod_rg.name
+  virtual_network_name = azurerm_virtual_network.vnet_prod.name
+  address_prefixes     = ["10.2.1.0/24"]
+}
+
+resource "azurerm_subnet" "vnet_dmz_subnet" {
+  name                 = "subnet"
+  resource_group_name  = azurerm_resource_group.dmz_rg.name
+  virtual_network_name = azurerm_virtual_network.vnet_dmz.name
+  address_prefixes     = ["10.1.1.0/24"]
+}
+
+resource "azurerm_subnet" "vnet_hub_subnet" {
+  name                 = "subnet"
+  resource_group_name  = azurerm_resource_group.hub_rg.name
+  virtual_network_name = azurerm_virtual_network.vnet_hub.name
+  address_prefixes     = ["172.16.1.0/24"]
 }
 
 resource "azurerm_subnet" "vnet_dmz_bastion_subnet" {
@@ -185,7 +188,7 @@ resource "azurerm_network_security_group" "nsg_prod" {
 }
 
 resource "azurerm_subnet_network_security_group_association" "nsg_assoc_prod" {
-  subnet_id                 = azurerm_subnet.vnet_prod.subnet.id
+  subnet_id                 = azurerm_subnet.vnet_prod_subnet.id
   network_security_group_id = azurerm_network_security_group.nsg_prod.id
 }
 
@@ -225,7 +228,7 @@ resource "azurerm_network_security_group" "nsg_dmz" {
 }
 
 resource "azurerm_subnet_network_security_group_association" "nsg_assoc_dmz" {
-  subnet_id                 = azurerm_subnet.vnet_dmz.subnet.id
+  subnet_id                 = azurerm_subnet.vnet_dmz_subnet.id
   network_security_group_id = azurerm_network_security_group.nsg_dmz.id
 }
 
@@ -261,7 +264,7 @@ resource "azurerm_network_interface" "nic_webapp01" {
 
   ip_configuration {
     name                          = "ipconfig-webapp01"
-    subnet_id                     = azurerm_subnet.vnet_prod.subnet.id
+    subnet_id                     = azurerm_subnet.vnet_prod_subnet.id
     private_ip_address_allocation = "Dynamic"
     #public_ip_address_id          = azurerm_public_ip.pip.id
   }
@@ -275,7 +278,7 @@ resource "azurerm_network_interface" "nic_webserver01" {
 
   ip_configuration {
     name                          = "ipconfig-webserver01"
-    subnet_id                     = azurerm_subnet.vnet_dmz.subnet.id
+    subnet_id                     = azurerm_subnet.vnet_dmz_subnet.id
     private_ip_address_allocation = "Dynamic"
   }
 }
