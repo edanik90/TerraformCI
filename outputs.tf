@@ -2,7 +2,7 @@
 # outputs.tf
 # ============================================================
 
-output "resource_group_name" {
+/* output "resource_group_name" {
   description = "Name of the created resource group"
   value       = azurerm_resource_group.rg.name
 }
@@ -26,3 +26,4 @@ output "rdp_connection_string" {
   description = "RDP connection string — paste directly into PowerShell"
   value       = "mstsc /v:${azurerm_public_ip.pip.ip_address}"
 }
+ */

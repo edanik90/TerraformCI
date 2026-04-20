@@ -63,7 +63,7 @@ resource "azurerm_virtual_network" "vnet_prod" {
   address_space       = ["10.2.0.0/24"]
   subnet = {
     name           = "subnet"
-    address_prefix = "10.2.1.0/24"
+    address_prefix = ["10.2.1.0/24"]
   }
   tags = var.tags
 }
@@ -75,7 +75,7 @@ resource "azurerm_virtual_network" "vnet_dmz" {
   address_space       = ["10.1.0.0/24"]
   subnet = {
     name           = "subnet"
-    address_prefix = "10.1.1.0/24"
+    address_prefix = ["10.1.1.0/24"]
   }
   tags = var.tags
 }
@@ -87,7 +87,7 @@ resource "azurerm_virtual_network" "vnet_hub" {
   address_space       = ["172.16.0.0/24"]
   subnet = {
     name           = "subnet"
-    address_prefix = "172.16.1.0/24"
+    address_prefix = ["172.16.1.0/24"]
   }
   tags = var.tags
 }
