@@ -125,6 +125,7 @@ resource "azurerm_virtual_network_peering" "peer_prod_to_hub" {
   remote_virtual_network_id    = azurerm_virtual_network.vnet_hub.id
   allow_virtual_network_access = true
   allow_forwarded_traffic      = true
+  use_remote_gateways          = true
 }
 
 resource "azurerm_virtual_network_peering" "peer_hub_to_prod" {
@@ -134,6 +135,7 @@ resource "azurerm_virtual_network_peering" "peer_hub_to_prod" {
   remote_virtual_network_id    = azurerm_virtual_network.vnet_prod.id
   allow_virtual_network_access = true
   allow_forwarded_traffic      = true
+  allow_gateway_transit        = true
 }
 
 resource "azurerm_virtual_network_peering" "peer_dmz_to_hub" {
@@ -143,6 +145,7 @@ resource "azurerm_virtual_network_peering" "peer_dmz_to_hub" {
   remote_virtual_network_id    = azurerm_virtual_network.vnet_hub.id
   allow_virtual_network_access = true
   allow_forwarded_traffic      = true
+  use_remote_gateways          = true
 }
 
 resource "azurerm_virtual_network_peering" "peer_hub_to_dmz" {
@@ -152,6 +155,7 @@ resource "azurerm_virtual_network_peering" "peer_hub_to_dmz" {
   remote_virtual_network_id    = azurerm_virtual_network.vnet_dmz.id
   allow_virtual_network_access = true
   allow_forwarded_traffic      = true
+  allow_gateway_transit        = true
 }
 
 # ============================================================
