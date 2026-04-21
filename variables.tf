@@ -44,11 +44,11 @@ variable "admin_password" {
   sensitive   = true
 }
 
-variable "windows_sku" {
+/* variable "windows_sku" {
   description = "Windows Server image SKU"
   type        = string
   default     = "2022-datacenter-azure-edition"
-}
+} */
 
 variable "linux_sku" {
   description = "Linux Server image SKU"
@@ -56,11 +56,11 @@ variable "linux_sku" {
   default     = "ubuntu-24_04-lts"
 }
 
-variable "allowed_ssh_source" {
+/* variable "allowed_ssh_source" {
   description = "Source IP or CIDR allowed to SSH. Use '*' for lab, restrict to your IP in production."
   type        = string
   default     = "*"
-}
+} */
 
 
 variable "tags" {
