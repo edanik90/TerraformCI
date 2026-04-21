@@ -57,7 +57,7 @@ resource "azurerm_resource_group" "hub_rg" {
 # Virtual Networks & Subnets
 # ============================================================
 resource "azurerm_virtual_network" "vnet_prod" {
-  name                = "VNET-PROD"
+  name                = "vnet-prod"
   location            = azurerm_resource_group.prod_rg.location
   resource_group_name = azurerm_resource_group.prod_rg.name
   address_space       = ["10.2.0.0/16"]
@@ -65,7 +65,7 @@ resource "azurerm_virtual_network" "vnet_prod" {
 }
 
 resource "azurerm_virtual_network" "vnet_dmz" {
-  name                = "VNET-DMZ"
+  name                = "vnet-dmz"
   location            = azurerm_resource_group.dmz_rg.location
   resource_group_name = azurerm_resource_group.dmz_rg.name
   address_space       = ["10.1.0.0/16"]
@@ -73,7 +73,7 @@ resource "azurerm_virtual_network" "vnet_dmz" {
 }
 
 resource "azurerm_virtual_network" "vnet_hub" {
-  name                = "VNET-HUB"
+  name                = "vnet-hub"
   location            = azurerm_resource_group.hub_rg.location
   resource_group_name = azurerm_resource_group.hub_rg.name
   address_space       = ["172.16.0.0/16"]
@@ -124,6 +124,7 @@ resource "azurerm_virtual_network_peering" "peer_prod_to_hub" {
   virtual_network_name         = azurerm_virtual_network.vnet_prod.name
   remote_virtual_network_id    = azurerm_virtual_network.vnet_hub.id
   allow_virtual_network_access = true
+  allow_forwarded_traffic      = true
 }
 
 resource "azurerm_virtual_network_peering" "peer_hub_to_prod" {
@@ -141,6 +142,7 @@ resource "azurerm_virtual_network_peering" "peer_dmz_to_hub" {
   virtual_network_name         = azurerm_virtual_network.vnet_dmz.name
   remote_virtual_network_id    = azurerm_virtual_network.vnet_hub.id
   allow_virtual_network_access = true
+  allow_forwarded_traffic      = true
 }
 
 resource "azurerm_virtual_network_peering" "peer_hub_to_dmz" {
@@ -162,7 +164,7 @@ resource "azurerm_network_security_group" "nsg_prod" {
   tags                = var.tags
 
   security_rule {
-    name                       = "Allow-SSH-for-Bastion"
+    name                       = "Allow-SSH-from-Bastion"
     priority                   = 100
     direction                  = "Inbound"
     access                     = "Allow"
@@ -174,14 +176,26 @@ resource "azurerm_network_security_group" "nsg_prod" {
   }
 
   security_rule {
+    name                       = "Allow-SSH-From-DMZ"
+    priority                   = 160
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "10.1.0.0/16"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
     name                       = "Deny-SSH-for-Rest"
-    priority                   = 101
+    priority                   = 1000
     direction                  = "Inbound"
     access                     = "Deny"
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "22"
-    source_address_prefix      = var.allowed_ssh_source
+    source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
 
@@ -202,7 +216,7 @@ resource "azurerm_network_security_group" "nsg_dmz" {
   tags                = var.tags
 
   security_rule {
-    name                       = "Allow-SSH-for-Bastion"
+    name                       = "Allow-SSH-from-Bastion"
     priority                   = 100
     direction                  = "Inbound"
     access                     = "Allow"
@@ -214,14 +228,26 @@ resource "azurerm_network_security_group" "nsg_dmz" {
   }
 
   security_rule {
+    name                       = "Allow-SSH-From-Prod"
+    priority                   = 150
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "10.2.0.0/16"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
     name                       = "Deny-SSH-for-Rest"
-    priority                   = 101
+    priority                   = 1000
     direction                  = "Inbound"
     access                     = "Deny"
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "22"
-    source_address_prefix      = var.allowed_ssh_source
+    source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
 
@@ -287,7 +313,7 @@ resource "azurerm_network_interface" "nic_webserver01" {
 # Bastion Hosts
 # ============================================================
 resource "azurerm_bastion_host" "bastion_prod" {
-  name                = "Bastion-Prod"
+  name                = "bastion-prod"
   location            = azurerm_resource_group.prod_rg.location
   resource_group_name = azurerm_resource_group.prod_rg.name
   tags                = var.tags
@@ -300,7 +326,7 @@ resource "azurerm_bastion_host" "bastion_prod" {
 }
 
 resource "azurerm_bastion_host" "bastion_dmz" {
-  name                = "Bastion-DMZ"
+  name                = "bastion-dmz"
   location            = azurerm_resource_group.dmz_rg.location
   resource_group_name = azurerm_resource_group.dmz_rg.name
   tags                = var.tags
