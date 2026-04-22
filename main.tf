@@ -332,7 +332,7 @@ resource "azurerm_virtual_network_gateway" "vpn_gateway" {
 
   type     = "Vpn"
   vpn_type = "RouteBased"
-  sku      = "VpnGw1"
+  sku      = "VpnGw1AZ"
 
   active_active = false
 
