@@ -335,7 +335,6 @@ resource "azurerm_virtual_network_gateway" "vpn_gateway" {
   sku      = "VpnGw1"
 
   active_active = false
-
   bgp_enabled = false
 
   ip_configuration {
