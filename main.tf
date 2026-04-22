@@ -264,7 +264,7 @@ resource "azurerm_public_ip" "pip_vpn_gateway" {
   resource_group_name = azurerm_resource_group.hub_rg.name
   allocation_method   = "Static"
   sku                 = "Standard"
-  zones = ["1", "2", "3"]
+  zones               = ["1", "2", "3"]
   tags                = var.tags
 }
 
