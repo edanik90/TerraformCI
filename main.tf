@@ -204,7 +204,7 @@ resource "azurerm_subnet_network_security_group_association" "nsg_assoc_prod" {
 }
 
 # ============================================================
-# Network Security Group For DMZ (Allow SSH from Bastion, Deny RDP from Rest)
+# Network Security Group For DMZ (Allow SSH from Bastion, Deny RDP from Rest) 
 # ============================================================
 resource "azurerm_network_security_group" "nsg_dmz" {
   name                = "nsg-dmz"
