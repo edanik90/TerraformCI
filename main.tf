@@ -60,7 +60,7 @@ resource "azurerm_virtual_network" "vnet_prod" {
   name                = "vnet-prod"
   location            = azurerm_resource_group.prod_rg.location
   resource_group_name = azurerm_resource_group.prod_rg.name
-  address_space       = ["10.2.0.0/16"]
+  address_space       = ["10.1.2.0/24"]
   tags                = var.tags
 }
 
@@ -68,7 +68,7 @@ resource "azurerm_virtual_network" "vnet_dmz" {
   name                = "vnet-dmz"
   location            = azurerm_resource_group.dmz_rg.location
   resource_group_name = azurerm_resource_group.dmz_rg.name
-  address_space       = ["10.1.0.0/16"]
+  address_space       = ["10.1.1.0/24"]
   tags                = var.tags
 }
 
@@ -76,7 +76,7 @@ resource "azurerm_virtual_network" "vnet_hub" {
   name                = "vnet-hub"
   location            = azurerm_resource_group.hub_rg.location
   resource_group_name = azurerm_resource_group.hub_rg.name
-  address_space       = ["172.16.0.0/16"]
+  address_space       = ["172.16.0.0/24"]
   tags                = var.tags
 }
 
@@ -84,35 +84,28 @@ resource "azurerm_subnet" "vnet_prod_subnet" {
   name                 = "subnet"
   resource_group_name  = azurerm_resource_group.prod_rg.name
   virtual_network_name = azurerm_virtual_network.vnet_prod.name
-  address_prefixes     = ["10.2.1.0/24"]
+  address_prefixes     = ["10.1.2.0/27"]
 }
 
 resource "azurerm_subnet" "vnet_dmz_subnet" {
   name                 = "subnet"
   resource_group_name  = azurerm_resource_group.dmz_rg.name
   virtual_network_name = azurerm_virtual_network.vnet_dmz.name
-  address_prefixes     = ["10.1.1.0/24"]
+  address_prefixes     = ["10.1.1.0/27"]
 }
 
-resource "azurerm_subnet" "vnet_hub_subnet" {
-  name                 = "subnet"
+resource "azurerm_subnet" "vnet_hub_gateway_subnet" {
+  name                 = "GatewaySubnet"
   resource_group_name  = azurerm_resource_group.hub_rg.name
   virtual_network_name = azurerm_virtual_network.vnet_hub.name
-  address_prefixes     = ["172.16.1.0/24"]
+  address_prefixes     = ["172.16.0.0/27"]
 }
 
-resource "azurerm_subnet" "vnet_dmz_bastion_subnet" {
+resource "azurerm_subnet" "vnet_hub_bastion_subnet" {
   name                 = "AzureBastionSubnet"
-  resource_group_name  = azurerm_resource_group.dmz_rg.name
-  virtual_network_name = azurerm_virtual_network.vnet_dmz.name
-  address_prefixes     = ["10.1.2.0/24"]
-}
-
-resource "azurerm_subnet" "vnet_prod_bastion_subnet" {
-  name                 = "AzureBastionSubnet"
-  resource_group_name  = azurerm_resource_group.prod_rg.name
-  virtual_network_name = azurerm_virtual_network.vnet_prod.name
-  address_prefixes     = ["10.2.2.0/24"]
+  resource_group_name  = azurerm_resource_group.hub_rg.name
+  virtual_network_name = azurerm_virtual_network.vnet_hub.name
+  address_prefixes     = ["172.16.0.32/27"]
 }
 
 # ============================================================
@@ -175,7 +168,7 @@ resource "azurerm_network_security_group" "nsg_prod" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "22"
-    source_address_prefix      = azurerm_subnet.vnet_prod_bastion_subnet.address_prefixes[0]
+    source_address_prefix      = azurerm_subnet.vnet_hub_bastion_subnet.address_prefixes[0]
     destination_address_prefix = "*"
   }
 
@@ -227,7 +220,7 @@ resource "azurerm_network_security_group" "nsg_dmz" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "22"
-    source_address_prefix      = azurerm_subnet.vnet_dmz_bastion_subnet.address_prefixes[0]
+    source_address_prefix      = azurerm_subnet.vnet_hub_bastion_subnet.address_prefixes[0]
     destination_address_prefix = "*"
   }
 
@@ -263,21 +256,21 @@ resource "azurerm_subnet_network_security_group_association" "nsg_assoc_dmz" {
 }
 
 # ============================================================
-# Public IPs for Bastion Hosts
+# Public IPs
 # ============================================================
-resource "azurerm_public_ip" "pip_bastion_prod" {
-  name                = "pip-bastion-prod"
-  location            = azurerm_resource_group.prod_rg.location
-  resource_group_name = azurerm_resource_group.prod_rg.name
+resource "azurerm_public_ip" "pip_vpn_gateway" {
+  name                = "pip-vpn-gateway"
+  location            = azurerm_resource_group.hub_rg.location
+  resource_group_name = azurerm_resource_group.hub_rg.name
   allocation_method   = "Static"
   sku                 = "Standard"
   tags                = var.tags
 }
 
-resource "azurerm_public_ip" "pip_bastion_dmz" {
-  name                = "pip-bastion-dmz"
-  location            = azurerm_resource_group.dmz_rg.location
-  resource_group_name = azurerm_resource_group.dmz_rg.name
+resource "azurerm_public_ip" "pip_bastion" {
+  name                = "pip-bastion"
+  location            = azurerm_resource_group.hub_rg.location
+  resource_group_name = azurerm_resource_group.hub_rg.name
   allocation_method   = "Static"
   sku                 = "Standard"
   tags                = var.tags
@@ -314,32 +307,97 @@ resource "azurerm_network_interface" "nic_webserver01" {
 }
 
 # ============================================================
-# Bastion Hosts
+# Bastion Host
 # ============================================================
-resource "azurerm_bastion_host" "bastion_prod" {
-  name                = "bastion-prod"
+resource "azurerm_bastion_host" "bastion" {
+  name                = "bastion"
+  location            = azurerm_resource_group.hub_rg.location
+  resource_group_name = azurerm_resource_group.hub_rg.name
+  tags                = var.tags
+
+  ip_configuration {
+    name                 = "configuration"
+    subnet_id            = azurerm_subnet.vnet_hub_bastion_subnet.id
+    public_ip_address_id = azurerm_public_ip.pip_bastion.id
+  }
+}
+
+# ============================================================
+# Virtual Network Gateway (VPN Gateway)
+# ============================================================
+resource "azurerm_virtual_network_gateway" "vpn_gateway" {
+  name                = "vpn-gateway"
+  location            = azurerm_resource_group.hub_rg.location
+  resource_group_name = azurerm_resource_group.hub_rg.name
+
+  type     = "Vpn"
+  vpn_type = "RouteBased"
+  sku      = "VpnGw1"
+
+  active_active = false
+
+  bgp_enabled = false
+
+  ip_configuration {
+    name                          = "vpn-gateway-config"
+    public_ip_address_id          = azurerm_public_ip.pip_vpn_gateway.id
+    private_ip_address_allocation = "Dynamic"
+    subnet_id                     = azurerm_subnet.vnet_hub_gateway_subnet.id
+  }
+
+  tags = var.tags
+}
+
+# ============================================================
+# Route Tables for Spoke-to-Spoke Communication via VPN Gateway
+# ============================================================
+
+resource "azurerm_route_table" "rt_prod_to_hub" {
+  name                = "rt-prod-to-hub"
   location            = azurerm_resource_group.prod_rg.location
   resource_group_name = azurerm_resource_group.prod_rg.name
   tags                = var.tags
 
-  ip_configuration {
-    name                 = "configuration"
-    subnet_id            = azurerm_subnet.vnet_prod_bastion_subnet.id
-    public_ip_address_id = azurerm_public_ip.pip_bastion_prod.id
+  route {
+    name           = "to-dmz-via-hub"
+    address_prefix = "10.1.1.0/24"
+    next_hop_type  = "VirtualNetworkGateway"
+  }
+
+  route {
+    name           = "to-hub-bastion"
+    address_prefix = "172.16.0.0/24"
+    next_hop_type  = "VirtualNetworkGateway"
   }
 }
 
-resource "azurerm_bastion_host" "bastion_dmz" {
-  name                = "bastion-dmz"
+resource "azurerm_route_table" "rt_dmz_to_hub" {
+  name                = "rt-dmz-to-hub"
   location            = azurerm_resource_group.dmz_rg.location
   resource_group_name = azurerm_resource_group.dmz_rg.name
   tags                = var.tags
 
-  ip_configuration {
-    name                 = "configuration"
-    subnet_id            = azurerm_subnet.vnet_dmz_bastion_subnet.id
-    public_ip_address_id = azurerm_public_ip.pip_bastion_dmz.id
+  route {
+    name           = "to-prod-via-hub"
+    address_prefix = "10.1.2.0/24"
+    next_hop_type  = "VirtualNetworkGateway"
   }
+
+  route {
+    name           = "to-hub-bastion"
+    address_prefix = "172.16.0.0/24"
+    next_hop_type  = "VirtualNetworkGateway"
+  }
+}
+
+resource "azurerm_subnet_route_table_association" "prod_subnet_assoc" {
+  subnet_id      = azurerm_subnet.vnet_prod_subnet.id
+  route_table_id = azurerm_route_table.rt_prod_to_hub.id
+}
+
+resource "azurerm_subnet_route_table_association" "dmz_subnet_assoc" {
+  subnet_id      = azurerm_subnet.vnet_dmz_subnet.id
+  route_table_id = azurerm_route_table.rt_dmz_to_hub.id
 }
 
 # ============================================================
@@ -402,6 +460,7 @@ resource "azurerm_linux_virtual_machine" "webserver01" {
     version   = "latest"
   }
 }
+
 /* resource "azurerm_windows_virtual_machine" "vm" {
   name                = var.vm_name
   location            = azurerm_resource_group.rg.location
