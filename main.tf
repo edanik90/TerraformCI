@@ -459,7 +459,6 @@ resource "azurerm_linux_virtual_machine" "webserver01" {
     version   = "latest"
   }
 }
-
 /* resource "azurerm_windows_virtual_machine" "vm" {
   name                = var.vm_name
   location            = azurerm_resource_group.rg.location
