@@ -81,14 +81,14 @@ resource "azurerm_virtual_network" "vnet_hub" {
 }
 
 resource "azurerm_subnet" "vnet_prod_subnet" {
-  name                 = "subnet"
+  name                 = "prod-subnet"
   resource_group_name  = azurerm_resource_group.prod_rg.name
   virtual_network_name = azurerm_virtual_network.vnet_prod.name
   address_prefixes     = ["10.1.2.0/27"]
 }
 
 resource "azurerm_subnet" "vnet_dmz_subnet" {
-  name                 = "subnet"
+  name                 = "dmz-subnet"
   resource_group_name  = azurerm_resource_group.dmz_rg.name
   virtual_network_name = azurerm_virtual_network.vnet_dmz.name
   address_prefixes     = ["10.1.1.0/27"]
@@ -232,7 +232,7 @@ resource "azurerm_network_security_group" "nsg_dmz" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "22"
-    source_address_prefix      = "10.2.0.0/16"
+    source_address_prefix      = "10.1.0.0/16"
     destination_address_prefix = "*"
   }
 
