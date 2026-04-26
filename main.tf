@@ -152,7 +152,7 @@ resource "azurerm_virtual_network_peering" "peer_hub_to_dmz" {
 }
 
 # ============================================================
-# Network Security Group For Production (Allow SSH from Bastion, Deny RDP from Rest)
+# Network Security Group For Production (Allow SSH from Bastion, Deny SSH from Rest)
 # ============================================================
 resource "azurerm_network_security_group" "nsg_prod" {
   name                = "nsg-prod"
@@ -169,18 +169,6 @@ resource "azurerm_network_security_group" "nsg_prod" {
     source_port_range          = "*"
     destination_port_range     = "22"
     source_address_prefix      = azurerm_subnet.vnet_hub_bastion_subnet.address_prefixes[0]
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "Allow-SSH-From-DMZ"
-    priority                   = 160
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefix      = "10.1.0.0/16"
     destination_address_prefix = "*"
   }
 
@@ -221,18 +209,6 @@ resource "azurerm_network_security_group" "nsg_dmz" {
     source_port_range          = "*"
     destination_port_range     = "22"
     source_address_prefix      = azurerm_subnet.vnet_hub_bastion_subnet.address_prefixes[0]
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "Allow-SSH-From-Prod"
-    priority                   = 150
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefix      = "10.1.0.0/16"
     destination_address_prefix = "*"
   }
 
