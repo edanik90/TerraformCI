@@ -94,8 +94,8 @@ resource "azurerm_subnet" "vnet_dmz_subnet" {
   address_prefixes     = ["10.1.1.0/27"]
 }
 
-resource "azurerm_subnet" "vnet_hub_gateway_subnet" {
-  name                 = "GatewaySubnet"
+resource "azurerm_subnet" "vnet_hub_router_subnet" {
+  name                 = "router-subnet"
   resource_group_name  = azurerm_resource_group.hub_rg.name
   virtual_network_name = azurerm_virtual_network.vnet_hub.name
   address_prefixes     = ["172.16.0.0/27"]
@@ -234,13 +234,12 @@ resource "azurerm_subnet_network_security_group_association" "nsg_assoc_dmz" {
 # ============================================================
 # Public IPs
 # ============================================================
-resource "azurerm_public_ip" "pip_vpn_gateway" {
-  name                = "pip-vpn-gateway"
+resource "azurerm_public_ip" "pip_router" {
+  name                = "pip-router"
   location            = azurerm_resource_group.hub_rg.location
   resource_group_name = azurerm_resource_group.hub_rg.name
   allocation_method   = "Static"
   sku                 = "Standard"
-  zones               = ["1", "2", "3"]
   tags                = var.tags
 }
 
