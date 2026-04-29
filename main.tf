@@ -152,6 +152,46 @@ resource "azurerm_virtual_network_peering" "peer_hub_to_dmz" {
 }
 
 # ============================================================
+# Network Security Group For RouterVM 
+# ============================================================
+resource "azurerm_network_security_group" "nsg_router" {
+  name                = "nsg-router"
+  location            = azurerm_resource_group.hub_rg.location
+  resource_group_name = azurerm_resource_group.hub_rg.name
+  tags                = var.tags
+
+  security_rule {
+    name                       = "Allow-SSH-from-Bastion"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = azurerm_subnet.vnet_hub_bastion_subnet.address_prefixes[0]
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "Deny-SSH-for-Rest"
+    priority                   = 1000
+    direction                  = "Inbound"
+    access                     = "Deny"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+}
+
+resource "azurerm_subnet_network_security_group_association" "nsg_assoc_router" {
+  subnet_id                 = azurerm_subnet.vnet_hub_router_subnet.id
+  network_security_group_id = azurerm_network_security_group.nsg_router.id
+}
+
+# ============================================================
 # Network Security Group For Production (Allow SSH from Bastion, Deny SSH from Rest)
 # ============================================================
 resource "azurerm_network_security_group" "nsg_prod" {
@@ -282,6 +322,19 @@ resource "azurerm_network_interface" "nic_webserver01" {
   }
 }
 
+resource "azurerm_network_interface" "nic_router" {
+  name                = "nic-router"
+  location            = azurerm_resource_group.hub_rg.location
+  resource_group_name = azurerm_resource_group.hub_rg.name
+  tags                = var.tags
+
+  ip_configuration {
+    name                          = "ipconfig-router"
+    subnet_id                     = azurerm_subnet.vnet_hub_router_subnet.id
+    private_ip_address_allocation = "Dynamic"
+  }
+}
+
 # ============================================================
 # Bastion Host
 # ============================================================
@@ -296,30 +349,6 @@ resource "azurerm_bastion_host" "bastion" {
     subnet_id            = azurerm_subnet.vnet_hub_bastion_subnet.id
     public_ip_address_id = azurerm_public_ip.pip_bastion.id
   }
-}
-
-# ============================================================
-# Virtual Network Gateway (VPN Gateway)
-# ============================================================
-resource "azurerm_virtual_network_gateway" "vpn_gateway" {
-  name                = "vpn-gateway"
-  location            = azurerm_resource_group.hub_rg.location
-  resource_group_name = azurerm_resource_group.hub_rg.name
-
-  type     = "Vpn"
-  vpn_type = "RouteBased"
-  sku      = "VpnGw1AZ"
-
-  active_active = false
-
-  ip_configuration {
-    name                          = "vpn-gateway-config"
-    public_ip_address_id          = azurerm_public_ip.pip_vpn_gateway.id
-    private_ip_address_allocation = "Dynamic"
-    subnet_id                     = azurerm_subnet.vnet_hub_gateway_subnet.id
-  }
-
-  tags = var.tags
 }
 
 # ============================================================
@@ -377,6 +406,35 @@ resource "azurerm_subnet_route_table_association" "dmz_subnet_assoc" {
 # ============================================================
 # Linux Server Virtual Machines
 # ============================================================
+resource "azurerm_linux_virtual_machine" "router" {
+  name                            = "RouterVM"
+  resource_group_name             = azurerm_resource_group.hub_rg.name
+  location                        = azurerm_resource_group.hub_rg.location
+  size                            = var.vm_size
+  priority                        = "Spot"
+  eviction_policy                 = "Deallocate"
+  max_bid_price                   = -1
+  disable_password_authentication = false
+  admin_username                  = var.admin_username
+  admin_password                  = var.admin_password
+  network_interface_ids = [
+    azurerm_network_interface.nic_router.id,
+  ]
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+    disk_size_gb         = 30
+  }
+
+  source_image_reference {
+    publisher = "canonical"
+    offer     = "ubuntu-24_04-lts"
+    sku       = "server"
+    version   = "latest"
+  }
+}
+
 resource "azurerm_linux_virtual_machine" "webapp01" {
   name                            = "WEBAPP01"
   resource_group_name             = azurerm_resource_group.prod_rg.name
@@ -434,6 +492,7 @@ resource "azurerm_linux_virtual_machine" "webserver01" {
     version   = "latest"
   }
 }
+
 /* resource "azurerm_windows_virtual_machine" "vm" {
   name                = var.vm_name
   location            = azurerm_resource_group.rg.location
