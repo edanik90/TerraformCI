@@ -152,7 +152,7 @@ resource "azurerm_virtual_network_peering" "peer_hub_to_dmz" {
 }
 
 # ============================================================
-# Network Security Group For Production (Allow SSH from Bastion, Deny SSH from Rest)
+# Network Security Group For Production (Allow RDP from Bastion, Deny RDP from Rest)
 # ============================================================
 resource "azurerm_network_security_group" "nsg_prod" {
   name                = "nsg-prod"
@@ -161,25 +161,25 @@ resource "azurerm_network_security_group" "nsg_prod" {
   tags                = var.tags
 
   security_rule {
-    name                       = "Allow-SSH-from-Bastion"
+    name                       = "Allow-RDP-from-Bastion"
     priority                   = 100
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
     source_port_range          = "*"
-    destination_port_range     = "22"
+    destination_port_range     = "3389"
     source_address_prefix      = azurerm_subnet.vnet_hub_bastion_subnet.address_prefixes[0]
     destination_address_prefix = "*"
   }
 
   security_rule {
-    name                       = "Deny-SSH-for-Rest"
+    name                       = "Deny-RDP-for-Rest"
     priority                   = 1000
     direction                  = "Inbound"
     access                     = "Deny"
     protocol                   = "Tcp"
     source_port_range          = "*"
-    destination_port_range     = "22"
+    destination_port_range     = "3389"
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
@@ -192,7 +192,7 @@ resource "azurerm_subnet_network_security_group_association" "nsg_assoc_prod" {
 }
 
 # ============================================================
-# Network Security Group For DMZ (Allow SSH from Bastion, Deny RDP from Rest) 
+# Network Security Group For DMZ (Allow SSH from Bastion, Deny SSH from Rest) 
 # ============================================================
 resource "azurerm_network_security_group" "nsg_dmz" {
   name                = "nsg-dmz"
@@ -378,7 +378,7 @@ resource "azurerm_subnet_route_table_association" "dmz_subnet_assoc" {
 # ============================================================
 # Linux Server Virtual Machines
 # ============================================================
-resource "azurerm_linux_virtual_machine" "webapp01" {
+/* resource "azurerm_linux_virtual_machine" "webapp01" {
   name                            = "WEBAPP01"
   resource_group_name             = azurerm_resource_group.prod_rg.name
   location                        = azurerm_resource_group.prod_rg.location
@@ -406,6 +406,7 @@ resource "azurerm_linux_virtual_machine" "webapp01" {
     version   = "latest"
   }
 }
+*/
 
 resource "azurerm_linux_virtual_machine" "webserver01" {
   name                            = "WEBSERVER01"
@@ -436,11 +437,18 @@ resource "azurerm_linux_virtual_machine" "webserver01" {
   }
 }
 
-/* resource "azurerm_windows_virtual_machine" "vm" {
-  name                = var.vm_name
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  size                = var.vm_size
+# ============================================================
+# Windows Server Virtual Machines
+# ============================================================
+
+resource "azurerm_windows_virtual_machine" "webapp01" {
+  name                = "WEBAPP01"
+  location            = azurerm_resource_group.prod_rg.location
+  resource_group_name = azurerm_resource_group.prod_rg.name
+  size                = var.win_server_vm_size
+  priority            = "Spot"
+  eviction_policy     = "Deallocate"
+  max_bid_price       = -1
   admin_username      = var.admin_username
   admin_password      = var.admin_password
   tags                = var.tags
@@ -450,21 +458,20 @@ resource "azurerm_linux_virtual_machine" "webserver01" {
   ]
 
   os_disk {
-    name                 = "osdisk-${var.vm_name}"
+    name                 = "osdisk-${vm.name}"
     caching              = "ReadWrite"
-    storage_account_type = "Premium_LRS"
+    storage_account_type = "Standard_LRS"
     disk_size_gb         = 128
   }
 
   source_image_reference {
     publisher = "MicrosoftWindowsServer"
-    offer     = "WindowsServer"
+    offer     = "windowsserver2022"
     sku       = var.windows_sku
     version   = "latest"
   }
-
-  enable_automatic_updates = true
-  patch_mode               = "AutomaticByOS"
+  automatic_updates_enabled = true
+  patch_mode                = "AutomaticByOS"
 
   boot_diagnostics {}
-} */
+}
