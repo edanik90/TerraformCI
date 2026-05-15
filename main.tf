@@ -407,6 +407,7 @@ resource "azurerm_linux_virtual_machine" "webapp01" {
   }
 }
 
+
 resource "azurerm_linux_virtual_machine" "webserver01" {
   name                            = "WEBSERVER01"
   resource_group_name             = azurerm_resource_group.dmz_rg.name
