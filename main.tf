@@ -458,7 +458,6 @@ resource "azurerm_windows_virtual_machine" "webapp01" {
   ]
 
   os_disk {
-    name                 = "osdisk-${webapp01.name}"
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
     disk_size_gb         = 128
