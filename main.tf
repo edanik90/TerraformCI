@@ -454,11 +454,11 @@ resource "azurerm_windows_virtual_machine" "webapp01" {
   tags                = var.tags
 
   network_interface_ids = [
-    azurerm_network_interface.nic.id
+    azurerm_network_interface.nic_webapp01.id,
   ]
 
   os_disk {
-    name                 = "osdisk-${vm.name}"
+    name                 = "osdisk-${webapp01.name}"
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
     disk_size_gb         = 128
