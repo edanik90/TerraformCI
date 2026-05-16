@@ -32,6 +32,12 @@ variable "vm_size" {
   default     = "Standard_DC1s_v3"
 }
 
+variable "win_server_vm_size" {
+  description = "Size/SKU of the Windows Server VM"
+  type        = string
+  default     = "Standard_D2s_v3"
+}
+
 variable "admin_username" {
   description = "Administrator username for the VM"
   type        = string
@@ -44,11 +50,11 @@ variable "admin_password" {
   sensitive   = true
 }
 
-/* variable "windows_sku" {
+variable "windows_sku" {
   description = "Windows Server image SKU"
   type        = string
   default     = "2022-datacenter-azure-edition"
-} */
+}
 
 variable "linux_sku" {
   description = "Linux Server image SKU"
