@@ -469,7 +469,6 @@ resource "azurerm_windows_virtual_machine" "webapp01" {
     sku       = var.windows_sku
     version   = "latest"
   }
-  automatic_updates_enabled = true
   patch_mode                = "AutomaticByOS"
 
   boot_diagnostics {}
