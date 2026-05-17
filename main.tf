@@ -473,4 +473,4 @@ resource "azurerm_windows_virtual_machine" "webapp01" {
 
   boot_diagnostics {}
 }
-##
+###
